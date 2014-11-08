@@ -35,6 +35,12 @@
     <ApplicationIcon>soundcloud.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\Visual Studio 2012\Packages\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\..\Visual Studio 2012\Packages\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -44,8 +50,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="SoundcloudClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SoundcloudClientTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
