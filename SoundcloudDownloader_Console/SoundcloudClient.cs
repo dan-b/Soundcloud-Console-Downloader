@@ -41,7 +41,7 @@ namespace Soundcloud
                 }
                 else
                 {
-                    downloadSong(url);
+                    DownloadSong(url);
                 }
             }
         }
@@ -69,7 +69,11 @@ namespace Soundcloud
             //int index = str.IndexOf("\"id\":", startindex) + 5;
             int index = str.IndexOf("\"track\",\"id\":", startindex) + 13;
             int titleindex = str.IndexOf("\"title\":", index) + 9;
-            TrackID trackID = new TrackID(index, str.Substring(index, str.IndexOf(",", index) - index), str.Substring(titleindex, str.IndexOf("\",", titleindex) - titleindex));
+            TrackID trackID = new TrackID(
+                index, 
+                str.Substring(index, str.IndexOf(",", index) - index), 
+                str.Substring(titleindex, str.IndexOf("\",", titleindex) - titleindex)
+            );
             return trackID;
         }
 
@@ -106,36 +110,51 @@ namespace Soundcloud
         /// </summary>
         /// <param name="trackID"></param>
         /// <returns></returns>
-        public static String resolveDownloadURL(String trackID)
+        public static String ResolveDownloadURL(String trackID)
         {
             WebClient w = new WebClient();
             String str = w.DownloadString("https://api.soundcloud.com/tracks/" + trackID + "/streams?client_id=" + clientID);
-            int index = str.IndexOf(":\"http") + 2;
-            return str.Substring(index, str.IndexOf("\"", index) - index);
+            var url = String.Empty;
+            try
+            {
+                dynamic downloadUrls = Newtonsoft.Json.JsonConvert.DeserializeObject(str);
+                url = downloadUrls.http_mp3_128_url; //TODO: handle cases when file type is not mp3 (e.g. wav)
+                url = url.Replace("\\u0026", "&");
+            }
+            catch (Exception exception)
+            {
+                var message = exception.Message;
+            }
+            return url;
         }
 
         /// <summary>
         /// Downloads a single song
         /// </summary>
         /// <param name="url"></param>
-        public static void downloadSong(String url)
+        public static void DownloadSong(String url)
         {
             TrackID trackID = ResolveTrackID(url, 0);
-            String downloadurl = resolveDownloadURL(trackID.id).Replace("\\u0026", "&");
+            String downloadurl = ResolveDownloadURL(trackID.id);
             WebClient w = new WebClient();
-            String filename = trackID.title + ".mp3";
-            if (filename.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-            {
-                foreach (char c in new string(Path.GetInvalidFileNameChars()))
-                {
-                    filename = filename.Replace(c.ToString(), "");
-                }
-            }
+            String filename = MakeFileNameSafe(trackID.title + ".mp3");
             Console.WriteLine("Downloading " + filename + ".");
-            w.DownloadFile(downloadurl, filename);
+            //w.DownloadFile(downloadurl, filename);
             Console.WriteLine("Finished downloading " + filename + ".");
         }
 
+        public static string MakeFileNameSafe(string fileName)
+        {
+            var invalidChars = System.IO.Path.GetInvalidFileNameChars();
+            if (fileName.IndexOfAny(invalidChars) >= 0)
+            {
+                foreach (char c in invalidChars)
+                {
+                    fileName = fileName.Replace(c.ToString(), "");
+                }
+            }
+            return fileName;
+        }
         /// <summary>
         /// Downloads a single Set
         /// </summary>
@@ -145,7 +164,7 @@ namespace Soundcloud
             List<TrackID> trackIDs = new List<TrackID>(resolveTrackIDs(url));
             foreach (TrackID trackID in trackIDs)
             {
-                String downloadurl = Regex.Unescape(resolveDownloadURL(trackID.id)); //.Replace("\\u0026", "&");
+                String downloadurl = Regex.Unescape(ResolveDownloadURL(trackID.id)); //.Replace("\\u0026", "&");
                 WebClient w = new WebClient();
                 String filename = Regex.Unescape(trackID.title) + ".mp3";
                 if (filename.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)

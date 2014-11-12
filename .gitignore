@@ -146,3 +146,5 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+SoundcloudDownloader_Console/Soundcloud_data.json
+isthisnamesafe.txt

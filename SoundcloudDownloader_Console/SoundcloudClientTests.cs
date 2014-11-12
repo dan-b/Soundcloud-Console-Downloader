@@ -12,5 +12,18 @@ namespace Soundcloud
         {
             var TrackID = SoundcloudClient.ResolveTrackID(url, startindex);
         }
+        [Test]
+        [TestCase(@"is:this/name|safe\?")]
+        public void MakeFileNameSafe(string unsafeFileName)
+        {
+            var result = SoundcloudClient.MakeFileNameSafe(unsafeFileName);
+        }
+        [Test]
+        [TestCase(@"https://soundcloud.com/mordfustang/finally-remix")]
+        public void DownloadSong(String url)
+        {
+            SoundcloudClient.DownloadSong(url);
+        }
+
     }
 }
